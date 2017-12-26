@@ -10,6 +10,7 @@ int main()
 	Person *temp;	//存放对象中的root
 	Person* result;
 	string name;	//搜索时用姓名
+	string rel_string;
 	Rel rel;//关系
 	int rel_num;
 	login:if (Login())
@@ -17,23 +18,14 @@ int main()
 		int choice;
 		while(true)
 		{
-			cout<<"**************家谱管理系统管理界面**************"<<endl;
-			cout<<"1.新建"<<endl;
-			cout<<"2.删除"<<endl;
-			cout<<"4.按名字搜索"<<endl;
-			cout<<"5.显示族谱"<<endl;
-			cout<<"6.更新数据"<<endl;
-			cout<<"7.添加家族成员"<<endl;
-			cout<<"8.统计数据"<<endl;
-			cout<<"1024.切换用户"<<endl;
-			cout<<"0.退出\n"<<endl;
+			admin_menu();
 
 			cout<<"输入你的选择："<<endl;
-			cin>>choice;
+			Detect(&choice);
 			switch(choice)
 			{
 			case 1:
-				if (gen.Create(&root))
+				if (gen.Create(&root,&root))
 				{
 					gen.set_root(root);
 					cout<<"创建成功！"<<endl;
@@ -62,6 +54,7 @@ int main()
 				break;
 			case 5:
 				temp =gen.get_root();
+				cout<<"----------------------家谱--------------------"<<endl;
 				gen.Show(temp,0);
 				break;
 			case 6:
@@ -72,16 +65,19 @@ int main()
 				break;
 			case 7:
 				temp =gen.get_root();
-				cout<<"输入一个名字："<<endl;
+				cout<<"将要被添加的这个成员与现有家谱中哪一个成员有关系，请输入家谱中该成员的名字："<<endl;
 				cin>>name;
-				cout<<"这个人与将要添加的人的关系：（parent/brother）"<<endl;
-				cin>>rel_num;	
+				cout<<"将要加入族谱的人与该成员之间的关系：（parent:0/brother:1）"<<endl;
+				Detect(&rel_num);	
 				switch(rel_num)
 				{
 				case 0:
+					rel = parent;
+					break;
+				case 1:
 					rel = brother;
 					break;
-				default:
+				default:	//默认为父子关系
 					rel = parent;
 					break;
 				}
