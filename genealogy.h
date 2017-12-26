@@ -12,7 +12,7 @@ public:
 	Genealogy();	//构造函数初始化
 	Person* get_root();
 	void set_root(Person *root);
-	bool Create(Person **p);
+	bool Create(Person **p,Person **root);
 	bool Login();	//管理员登录
 	Person* Search(Person* p,const string name);
 	Person* FindPre(Person* p);
@@ -54,7 +54,69 @@ void Genealogy::set_root(Person* root)
 	this->root = root;
 }
 
-bool Genealogy::Create(Person **p)
+
+bool Genealogy::Create(Person **p,Person **root)
+{
+	bool mate;
+	int tag;
+	*p = new Person;
+	if (!(*p))
+	{
+		return false;
+	}
+	(*p)->parent = NULL;
+	(*p)->firstchild = NULL;
+	(*p)->nexsilbing = NULL;
+	cout<<"本人："<<endl;
+	input(&((*p)->info));
+	cout<<"是否有配偶？（1表示有，0表示没有）"<<endl;
+	Detect(&mate);
+	if (mate)
+	{
+		cout<<"配偶："<<endl;
+		input(&((*p)->mate));
+	}
+	Show(*root,0);
+	cout<<"1.添加"<<(*p)->info.name<<"的孩子"<<endl;
+	cout<<"2.添加"<<(*p)->info.name<<"的兄弟姐妹"<<endl;
+	cout<<"3.不再添加"<<(*p)->info.name<<"的后代及同胞"<<endl;
+	cout<<"输入你的选择：";
+	Detect(&tag);
+	switch(tag)
+	{
+	case 1:
+		Create(&((*p)->firstchild),root);
+		if ((*p)->firstchild)
+			(*p)->firstchild->parent = *p;
+		cout<<"******添加"<<(*p)->info.name<<"的兄弟姐妹"<<endl;
+		Create(&((*p)->nexsilbing),root);
+		if ((*p)->nexsilbing)
+			(*p)->nexsilbing->parent = (*p)->parent;
+		return true;
+		break;
+	case 2:
+		Create(&((*p)->nexsilbing),root);
+		if ((*p)->nexsilbing)
+			(*p)->nexsilbing->parent = (*p)->parent;
+		cout<<"******添加"<<(*p)->info.name<<"的孩子"<<endl;
+		Create(&((*p)->firstchild),root);
+		if ((*p)->firstchild)
+			(*p)->firstchild->parent = *p;
+		return true;
+		break;
+	case 3:
+		(*p)->firstchild = NULL;
+		(*p)->nexsilbing = NULL;
+		return true;
+		break;
+	default:
+		(*p)->firstchild = NULL;
+		(*p)->nexsilbing = NULL;
+		return true;
+		break;
+	}
+}
+/*bool Genealogy::Create(Person **p)
 {
 	int tag;
 	bool mate;
@@ -93,7 +155,97 @@ bool Genealogy::Create(Person **p)
 			(*p)->nexsilbing->parent = (*p)->parent;
 	}
 	return true;
-}
+}*/
+/*bool Genealogy::Create(Person **p)
+{
+	bool mate;
+	if((*p)->parent)
+	{
+		int tag;
+		cout<<"1.添加"<<(*p)->parent->info.name<<"的孩子"<<endl;
+		cout<<"2.添加"<<(*p)->parent->info.name<<"的兄弟姐妹"<<endl;
+		cout<<"3.不再添加"<<(*p)->parent->info.name<<"的后代及同胞"<<endl;
+		cout<<"输入你的选择：";
+		Detect(&tag);
+		switch(tag)
+		{
+		case 1:
+
+			break;
+		case 2:
+			break;
+		case 3:
+			*p = NULL;
+			return true;
+			break;
+		default:
+			*p = NULL;
+			return true;
+			break;
+		}
+	}
+	else
+	{
+		*p = new Person;
+		if (!(*p))
+		{
+			return false;
+		}
+		(*p)->parent = NULL;
+		cout<<"基本信息："<<endl;
+		input(&((*p)->info));
+		cout<<"是否有配偶？（1表示有，0表示没有）"<<endl;
+		Detect(&mate);	//合法性检测
+		if (mate)//有配偶才有孩子
+		{
+			cout<<"配偶："<<endl;
+			input(&((*p)->mate));
+			Create(&((*p)->firstchild));
+			if ((*p)->firstchild)
+				(*p)->firstchild->parent = *p;
+		}
+		else
+		{
+			(*p)->firstchild = NULL;
+		}
+		Create(&((*p)->nexsilbing));
+		if ((*p)->nexsilbing)
+			(*p)->nexsilbing->parent = (*p)->parent;
+	}
+	if (!tag)
+	{
+		*p =  NULL;
+	}
+	else
+	{
+		*p = new Person;
+		if (!(*p))
+		{
+			return false;
+		}
+		(*p)->parent = NULL;
+		cout<<"基本信息："<<endl;
+		input(&((*p)->info));
+		cout<<"是否有配偶？（1表示有，0表示没有）"<<endl;
+		Detect(&mate);	//合法性检测
+		if (mate)//有配偶才有孩子
+		{
+			cout<<"配偶："<<endl;
+			input(&((*p)->mate));
+			Create(&((*p)->firstchild));
+			if ((*p)->firstchild)
+				(*p)->firstchild->parent = *p;
+		}
+		else
+		{
+			(*p)->firstchild = NULL;
+		}
+		Create(&((*p)->nexsilbing));
+		if ((*p)->nexsilbing)
+			(*p)->nexsilbing->parent = (*p)->parent;
+	}
+	return true;
+}*/
 Person* Genealogy::FindPre(Person* p)//找到与p节点相连的前一个节点
 {
 	if(p)
@@ -376,7 +528,7 @@ double Genealogy::GetHeight()
 {
 	if(num.dnum)
 	{
-		ave_height = sumheight/num.dnum;
+		ave_height = sumheight/num.dnum;  
 		cout<<"平均身高："<<ave_height<<endl;
 		return ave_height;
 	}
