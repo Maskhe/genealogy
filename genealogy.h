@@ -88,20 +88,32 @@ bool Genealogy::Create(Person **p,Person **root)
 		Create(&((*p)->firstchild),root);
 		if ((*p)->firstchild)
 			(*p)->firstchild->parent = *p;
-		cout<<"******添加"<<(*p)->info.name<<"的兄弟姐妹"<<endl;
-		Create(&((*p)->nexsilbing),root);
-		if ((*p)->nexsilbing)
-			(*p)->nexsilbing->parent = (*p)->parent;
+		cout<<"******是否添加"<<(*p)->info.name<<"的兄弟姐妹"<<endl;
+		Detect(&tag);
+		if(tag)
+		{
+			Create(&((*p)->nexsilbing),root);
+			if ((*p)->nexsilbing)
+				(*p)->nexsilbing->parent = (*p)->parent;
+		}
+		else
+			(*p)->nexsilbing = NULL;
 		return true;
 		break;
 	case 2:
 		Create(&((*p)->nexsilbing),root);
 		if ((*p)->nexsilbing)
 			(*p)->nexsilbing->parent = (*p)->parent;
-		cout<<"******添加"<<(*p)->info.name<<"的孩子"<<endl;
-		Create(&((*p)->firstchild),root);
-		if ((*p)->firstchild)
-			(*p)->firstchild->parent = *p;
+		cout<<"******是否添加"<<(*p)->info.name<<"的孩子？（1表示是，0表示不添加）"<<endl;
+		Detect(&tag);
+		if(tag)
+		{
+			Create(&((*p)->firstchild),root);
+			if ((*p)->firstchild)
+				(*p)->firstchild->parent = *p;
+		}
+		else
+			(*p)->firstchild = NULL;
 		return true;
 		break;
 	case 3:
@@ -253,12 +265,12 @@ Person* Genealogy::FindPre(Person* p)//找到与p节点相连的前一个节点
 		Person* temp;
 		Person* pre;
 		Person* current;
-		if(p->parent)
+		if(p->parent)	
 		{
 			temp = p->parent;
 			if (temp->firstchild!=p) //判断p是否是第一个孩子
 			{
-				pre = temp->firstchild;
+				current = temp->firstchild;
 				while(current!=p)
 				{
 					pre = current;
@@ -269,8 +281,20 @@ Person* Genealogy::FindPre(Person* p)//找到与p节点相连的前一个节点
 			else	//是第一个孩子，直接返回父节点
 				return temp;
 		}
-		else
-			return NULL;
+		else		//只有第一代人才没有父节点
+		{
+			if(root==p)
+				return NULL;
+			else{
+				current = root;
+				while(current!=p)
+				{
+					pre = current;
+					current = current->nexsilbing;
+				}
+				return pre;
+			}
+		}
 	}
 	return NULL;
 }
