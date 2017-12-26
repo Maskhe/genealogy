@@ -15,6 +15,7 @@ public:
 	bool Create(Person **p,Person **root);
 	bool Login();	//管理员登录
 	Person* Search(Person* p,const string name);
+	Person* Search(Person* p,const string name,int tag);
 	Person* FindPre(Person* p);
 	bool Delete(Person* p,const string name); //按名字删除
 	bool Update(Person* p,const string name);	//更改族谱
@@ -320,6 +321,14 @@ Person* Genealogy::Search(Person* p,const string name)
 	}
 	return NULL;
 }
+Person* Genealogy::Search(Person* p,const string name,int tag)	//模糊查询
+{
+	if(p)
+	{
+		return NULL;
+	}
+	return NULL;
+}
 /*Person* Search(Person* p,const string name)
 {
 	Person* temp;
@@ -438,8 +447,6 @@ bool Genealogy::Update(Person* p,const string name)
 		cout<<"家谱中无该成员！"<<endl;
 		return false;
 }
-
-
 
 bool Genealogy::Add(Person *p,string name,Rel rel)
 {
