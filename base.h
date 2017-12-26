@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 #include <cstring>
+#include <iomanip>
+#include <regex>
 
 #define ERROR -1
 #define OK 1
