@@ -10,7 +10,7 @@ typedef struct info{
 	string name;
 	string job;
 	double height;
-	wstring birthplace;
+	string birthplace;
 	string birthday;
 	string deathday;
 	string education;
