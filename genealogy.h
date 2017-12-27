@@ -12,14 +12,17 @@ public:
 	Genealogy();	//¹¹Ôìº¯Êý³õÊ¼»¯
 	Person* get_root();
 	void set_root(Person *root);
-	bool Create(Person **p);
+	bool Create(Person **p,Person **root);
+	bool Create(Person **p,ifstream& infile,streampos dir);
 	bool Login();	//¹ÜÀíÔ±µÇÂ¼
 	Person* Search(Person* p,const string name);
+	bool Search(Person* p,const string name,int tag);
 	Person* FindPre(Person* p);
 	bool Delete(Person* p,const string name); //°´Ãû×ÖÉ¾³ý
 	bool Update(Person* p,const string name);	//¸ü¸Ä×åÆ×
 	bool Add(Person* p,string name,Rel rel);	//Ìí¼ÓÐÂ³ÉÔ±
 	void Show(Person* p,int depth);
+	void Show(ifstream& infile);
 	bool MemSearch();		//°´³ÉÔ±²éÑ¯
 	bool RelSearch();	//²éÕÒ³ÉÔ±Ö®¼äµÄ¹ØÏµ
 	bool Statistics(Person* p);
@@ -54,7 +57,85 @@ void Genealogy::set_root(Person* root)
 	this->root = root;
 }
 
-bool Genealogy::Create(Person **p)
+
+bool Genealogy::Create(Person **p,Person **root)
+{
+	bool mate;
+	int tag;
+	*p = new Person;
+	if (!(*p))
+	{
+		return false;
+	}
+	(*p)->parent = NULL;
+	(*p)->firstchild = NULL;
+	(*p)->nexsilbing = NULL;
+	cout<<"±¾ÈË£º"<<endl;
+	input(&((*p)->info));
+	cout<<"ÊÇ·ñÓÐÅäÅ¼£¿£¨1±íÊ¾ÓÐ£¬0±íÊ¾Ã»ÓÐ£©"<<endl;
+	Detect(&mate);
+	if (mate)
+	{
+		cout<<"ÅäÅ¼£º"<<endl;
+		input(&((*p)->mate));
+	}
+	else
+	{
+		(*p)->mate.name = "ÎÞ";
+	}
+	Show(*root,0);
+	cout<<"1.Ìí¼Ó"<<(*p)->info.name<<"µÄº¢×Ó"<<endl;
+	cout<<"2.Ìí¼Ó"<<(*p)->info.name<<"µÄÐÖµÜ½ãÃÃ"<<endl;
+	cout<<"3.²»ÔÙÌí¼Ó"<<(*p)->info.name<<"µÄºó´ú¼°Í¬°û"<<endl;
+	cout<<"ÊäÈëÄãµÄÑ¡Ôñ£º";
+	Detect(&tag);
+	switch(tag)
+	{
+	case 1:
+		Create(&((*p)->firstchild),root);
+		if ((*p)->firstchild)
+			(*p)->firstchild->parent = *p;
+		cout<<"******ÊÇ·ñÌí¼Ó"<<(*p)->info.name<<"µÄÐÖµÜ½ãÃÃ"<<endl;
+		Detect(&tag);
+		if(tag)
+		{
+			Create(&((*p)->nexsilbing),root);
+			if ((*p)->nexsilbing)
+				(*p)->nexsilbing->parent = (*p)->parent;
+		}
+		else
+			(*p)->nexsilbing = NULL;
+		return true;
+		break;
+	case 2:
+		Create(&((*p)->nexsilbing),root);
+		if ((*p)->nexsilbing)
+			(*p)->nexsilbing->parent = (*p)->parent;
+		cout<<"******ÊÇ·ñÌí¼Ó"<<(*p)->info.name<<"µÄº¢×Ó£¿£¨1±íÊ¾ÊÇ£¬0±íÊ¾²»Ìí¼Ó£©"<<endl;
+		Detect(&tag);
+		if(tag)
+		{
+			Create(&((*p)->firstchild),root);
+			if ((*p)->firstchild)
+				(*p)->firstchild->parent = *p;
+		}
+		else
+			(*p)->firstchild = NULL;
+		return true;
+		break;
+	case 3:
+		(*p)->firstchild = NULL;
+		(*p)->nexsilbing = NULL;
+		return true;
+		break;
+	default:
+		(*p)->firstchild = NULL;
+		(*p)->nexsilbing = NULL;
+		return true;
+		break;
+	}
+}
+/*bool Genealogy::Create(Person **p)
 {
 	int tag;
 	bool mate;
@@ -93,7 +174,97 @@ bool Genealogy::Create(Person **p)
 			(*p)->nexsilbing->parent = (*p)->parent;
 	}
 	return true;
-}
+}*/
+/*bool Genealogy::Create(Person **p)
+{
+	bool mate;
+	if((*p)->parent)
+	{
+		int tag;
+		cout<<"1.Ìí¼Ó"<<(*p)->parent->info.name<<"µÄº¢×Ó"<<endl;
+		cout<<"2.Ìí¼Ó"<<(*p)->parent->info.name<<"µÄÐÖµÜ½ãÃÃ"<<endl;
+		cout<<"3.²»ÔÙÌí¼Ó"<<(*p)->parent->info.name<<"µÄºó´ú¼°Í¬°û"<<endl;
+		cout<<"ÊäÈëÄãµÄÑ¡Ôñ£º";
+		Detect(&tag);
+		switch(tag)
+		{
+		case 1:
+
+			break;
+		case 2:
+			break;
+		case 3:
+			*p = NULL;
+			return true;
+			break;
+		default:
+			*p = NULL;
+			return true;
+			break;
+		}
+	}
+	else
+	{
+		*p = new Person;
+		if (!(*p))
+		{
+			return false;
+		}
+		(*p)->parent = NULL;
+		cout<<"»ù±¾ÐÅÏ¢£º"<<endl;
+		input(&((*p)->info));
+		cout<<"ÊÇ·ñÓÐÅäÅ¼£¿£¨1±íÊ¾ÓÐ£¬0±íÊ¾Ã»ÓÐ£©"<<endl;
+		Detect(&mate);	//ºÏ·¨ÐÔ¼ì²â
+		if (mate)//ÓÐÅäÅ¼²ÅÓÐº¢×Ó
+		{
+			cout<<"ÅäÅ¼£º"<<endl;
+			input(&((*p)->mate));
+			Create(&((*p)->firstchild));
+			if ((*p)->firstchild)
+				(*p)->firstchild->parent = *p;
+		}
+		else
+		{
+			(*p)->firstchild = NULL;
+		}
+		Create(&((*p)->nexsilbing));
+		if ((*p)->nexsilbing)
+			(*p)->nexsilbing->parent = (*p)->parent;
+	}
+	if (!tag)
+	{
+		*p =  NULL;
+	}
+	else
+	{
+		*p = new Person;
+		if (!(*p))
+		{
+			return false;
+		}
+		(*p)->parent = NULL;
+		cout<<"»ù±¾ÐÅÏ¢£º"<<endl;
+		input(&((*p)->info));
+		cout<<"ÊÇ·ñÓÐÅäÅ¼£¿£¨1±íÊ¾ÓÐ£¬0±íÊ¾Ã»ÓÐ£©"<<endl;
+		Detect(&mate);	//ºÏ·¨ÐÔ¼ì²â
+		if (mate)//ÓÐÅäÅ¼²ÅÓÐº¢×Ó
+		{
+			cout<<"ÅäÅ¼£º"<<endl;
+			input(&((*p)->mate));
+			Create(&((*p)->firstchild));
+			if ((*p)->firstchild)
+				(*p)->firstchild->parent = *p;
+		}
+		else
+		{
+			(*p)->firstchild = NULL;
+		}
+		Create(&((*p)->nexsilbing));
+		if ((*p)->nexsilbing)
+			(*p)->nexsilbing->parent = (*p)->parent;
+	}
+	return true;
+}*/
 Person* Genealogy::FindPre(Person* p)//ÕÒµ½Óëp½ÚµãÏàÁ¬µÄÇ°Ò»¸ö½Úµã
 {
 	if(p)
@@ -101,12 +272,12 @@ Person* Genealogy::FindPre(Person* p)//ÕÒµ½Óëp½ÚµãÏàÁ¬µÄÇ°Ò»¸ö½Úµã
 		Person* temp;
 		Person* pre;
 		Person* current;
-		if(p->parent)
+		if(p->parent)	
 		{
 			temp = p->parent;
 			if (temp->firstchild!=p) //ÅÐ¶ÏpÊÇ·ñÊÇµÚÒ»¸öº¢×Ó
 			{
-				pre = temp->firstchild;
+				current = temp->firstchild;
 				while(current!=p)
 				{
 					pre = current;
@@ -117,8 +288,20 @@ Person* Genealogy::FindPre(Person* p)//ÕÒµ½Óëp½ÚµãÏàÁ¬µÄÇ°Ò»¸ö½Úµã
 			else	//ÊÇµÚÒ»¸öº¢×Ó£¬Ö±½Ó·µ»Ø¸¸½Úµã
 				return temp;
 		}
-		else
-			return NULL;
+		else		//Ö»ÓÐµÚÒ»´úÈË²ÅÃ»ÓÐ¸¸½Úµã
+		{
+			if(root==p)
+				return NULL;
+			else{
+				current = root;
+				while(current!=p)
+				{
+					pre = current;
+					current = current->nexsilbing;
+				}
+				return pre;
+			}
+		}
 	}
 	return NULL;
 }
@@ -143,6 +326,37 @@ Person* Genealogy::Search(Person* p,const string name)
 		}
 	}
 	return NULL;
+}
+bool Genealogy::Search(Person* p,const string name,int tag)	//Ä£ºý²éÑ¯
+{
+	if(p)
+	{
+		if(name.length()>=4&&p->info.name.length()>=4)//Èç¹ûÃû×Ö³¤¶È´óÓÚËÄ£¬¾Í±È½ÏÇ°ËÄ¸ö
+		{
+			if(name.substr(0,4)==p->info.name.substr(0,4))
+			{
+				Display(p);
+				Search(p->firstchild,name,tag);
+				Search(p->nexsilbing,name,tag);
+				return true;
+			}
+		}
+		else
+		{
+			if(name==p->info.name)
+			{
+				Display(p);
+				return true;
+			}
+			else
+			{
+				Search(p->firstchild,name,tag);
+				Search(p->nexsilbing,name,tag);
+				return true;
+			}
+		}
+	}
+	return true;
 }
 /*Person* Search(Person* p,const string name)
 {
@@ -183,13 +397,19 @@ bool Genealogy::Delete(Person *p,const string name)//´Ë´¦bug:Èç¹ûÉ¾³ýµÄ½ÚµãÎª¸ù½
 				pre = FindPre(target);
 				if (pre)//Ä¿±ê½ÚµãÇ°Ò»¸ö½Úµã´æÔÚ
 				{
-					if (pre->firstchild==target)
+					if (pre->firstchild=target)
 						pre->firstchild=NULL;
 					else
 						pre->nexsilbing = NULL;
+					free(target);
+					return true;
 				}
-				free(target);
-				return true;
+				if(p==root)
+				{
+					free(target);
+					root = NULL;
+					return true;
+				}
 			}
 		}
 		return false;//¼ÒÆ×ÖÐÃ»ÓÐÕâ¸öÈË
@@ -262,8 +482,6 @@ bool Genealogy::Update(Person* p,const string name)
 		cout<<"¼ÒÆ×ÖÐÎÞ¸Ã³ÉÔ±£¡"<<endl;
 		return false;
 }
-
-
 
 bool Genealogy::Add(Person *p,string name,Rel rel)
 {
@@ -376,7 +594,7 @@ double Genealogy::GetHeight()
 {
 	if(num.dnum)
 	{
-		ave_height = sumheight/num.dnum;
+		ave_height = sumheight/num.dnum;  
 		cout<<"Æ½¾ùÉí¸ß£º"<<ave_height<<endl;
 		return ave_height;
 	}
@@ -398,4 +616,104 @@ double Genealogy::GetRatio()
 		cout<<"¸Ã¼Ò×åÄÐÅ®±ÈÀýÎª£º"<<num.mnum<<"£º"<<num.fnum<<endl;
 		return ratio;
 	}
+}
+
+
+bool Genealogy::Create(Person **p,ifstream& infile,streampos dir)//´ÓÎÄ¼þ¶ÁÊé¾Ý²¢´´½¨Ê÷
+{
+	string sign;
+	string name,job,birthplace,birthday,deathday,education;
+	string height;
+	string age;
+	string live,gender,great;
+	//streampos sp = infile.tellg();	//¶¨Î»ÎÄ¼þÖ¸Õë
+	streampos sp;
+	infile.seekg(dir);//¶ÁÖ¸Õë¶¨Î»
+	if(!getline(infile,sign))
+		return true;
+	if(sign=="ÆÕÍ¨½Úµã£º")
+	{
+		*p = new Person;
+		if (!(*p))
+		{
+			return false;
+		}
+		(*p)->parent = NULL;
+		(*p)->firstchild = NULL;
+		(*p)->nexsilbing = NULL;
+		getline(infile,name);
+		getline(infile,gender);
+		getline(infile,height);
+		getline(infile,job);
+		getline(infile,birthplace);
+		getline(infile,birthday);
+		getline(infile,live);
+		getline(infile,deathday);
+		getline(infile,age);
+		getline(infile,education);
+		getline(infile,great);
+
+		(*p)->info.name = name;
+		(*p)->info.gender = stoi(gender);
+		(*p)->info.height = stod(height);
+		(*p)->info.job = job;
+		(*p)->info.birthplace = birthplace;
+		(*p)->info.birthday = birthday;
+		(*p)->info.live = stoi(live);
+		(*p)->info.deathday = deathday;
+		(*p)->info.age = stoi(age);
+		(*p)->info.education = education;
+		(*p)->info.great = stoi(great);
+		
+		getline(infile,sign);
+		if(sign=="ÅäÅ¼£º")
+		{
+			getline(infile,name);
+			getline(infile,gender);
+			getline(infile,height);
+			getline(infile,job);
+			getline(infile,birthplace);
+			getline(infile,birthday);
+			getline(infile,live);
+			getline(infile,deathday);
+			getline(infile,age);
+			getline(infile,education);
+			getline(infile,great);
+
+			(*p)->mate.name = name;
+			(*p)->mate.gender = stoi(gender);
+			(*p)->mate.height = stod(height);
+			(*p)->mate.job = job;
+			(*p)->mate.birthplace = birthplace;
+			(*p)->mate.birthday = birthday;
+			(*p)->mate.live = stoi(live);
+			(*p)->mate.deathday = deathday;
+			(*p)->mate.age = stoi(age);
+			(*p)->mate.education = education;
+			(*p)->mate.great = stoi(great);
+		}
+		(*p)->mate.name = "ÎÞ";	//Ã»ÓÐÅäÅ¼¾Í½«ÅäÅ¼Ãû×ÖÖÃÎªÎÞ
+		sp = infile.tellg();
+		Create(&((*p)->firstchild),infile,sp);
+		if((*p)->firstchild)
+			(*p)->parent = *p;
+		sp = infile.tellg();
+		Create(&((*p)->nexsilbing),infile,sp);
+		if((*p)->nexsilbing)
+			(*p)->parent = (*p)->parent;
+
+	}
+	else
+	{
+		*p = NULL;
+		return true;
+	}
+	
+}
+
+void Genealogy::Show(ifstream& infile)
+{
+	Person* root = NULL;
+	Create(&root,infile,ios_base::beg);
+	Show(root,0);
 }
