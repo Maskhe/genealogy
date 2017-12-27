@@ -2,32 +2,93 @@
 #include <string>
 using namespace std;
 
+void Detect(bool *temp)
+{
+	while(!(cin>>*temp))
+	{
+		cin.clear();
+		while(cin.get()!='\n'){
+			continue;
+		}
+		cout<<"提示：输入有误\n请重新输入："<<endl;
+	}
+}
+
+void Detect(int *temp)
+{
+	while(!(cin>>*temp))
+	{
+		cin.clear();
+		while(cin.get()!='\n'){
+			continue;
+		}
+		cout<<"提示：输入有误\n请重新输入："<<endl;
+	}
+}
+
+void Detect(double *temp)
+{
+	while(!(cin>>*temp))
+	{
+		cin.clear();
+		while(cin.get()!='\n'){
+			continue;
+		}
+		cout<<"提示：输入有误\n请重新输入："<<endl;
+	}
+}
+
+
+bool Detect(string temp)	//检测日期是否正确
+{
+	const regex pattern("\\d{2,4}[-\.]\\d{0,2}[-\.]\\d{0,2}");
+	return regex_match(temp,pattern);
+}
+
+
 bool input(Info *info)	//此处返回时，注意局部变量的地址不能返回
 {
 	string name;
+	string date;
 	cout<<"请输入相关信息："<<endl;
 	cout<<"姓名：";
 	cin>>info->name;
 	cout<<"工作：";
 	cin>>info->job;
-	cout<<"身高：";
-	cin>>info->height;
+	cout<<"身高(单位：厘米)：";
+	Detect(&(info->height));
 	cout<<"出生地：";
-	wcin>>info->birthplace;	//宽字符
+	cin>>info->birthplace;	//宽字符
 	cout<<"出生日期：";
-	cin>>info->birthday;
+	while(true)
+	{
+		cin>>date;
+		if(Detect(date))
+			break;
+		else
+			cout<<"提示：不正确的日期！"<<endl;
+	}
+	info->birthday = date;
 	cout<<"死亡日期：";
-	cin>>info->deathday;
-	cout<<"享年："<<endl;
-	cin>>info->age;
+	while(true)
+	{
+		cin>>date;
+		if(Detect(date))
+			break;
+		else
+			cout<<"提示：不正确的日期！"<<endl;
+	}
+	info->deathday = date;
+	cout<<"享年：";
+	Detect(&(info->age));
 	cout<<"文化水平：";
 	cin>>info->education;
 	cout<<"是否有过卓著贡献：";
-	cin>>info->great;
+	Detect(&(info->great));
 	cout<<"是否健在：";
-	cin>>info->live;
+	Detect(&(info->live));
 	cout<<"性别(男1女0)：";
-	cin>>info->gender;
+	Detect(&(info->gender));
 	return true;
 }
 
@@ -38,13 +99,14 @@ void Display(Person* p)
 	cout<<"职业："<<p->info.job<<endl;
 	cout<<"性别："<<p->info.gender<<endl;
 	cout<<"身高："<<p->info.height<<endl;
-	wcout<<"出生地："<<p->info.birthplace<<endl;
+	cout<<"出生地："<<p->info.birthplace<<endl;
 	cout<<"出生日期："<<p->info.birthday<<endl;
 	cout<<"教育水平："<<p->info.education<<endl;
 	cout<<"是否死亡："<<p->info.live<<endl;
 	cout<<"死亡日期："<<p->info.deathday<<endl;
 	cout<<"享年："<<p->info.age<<endl;
 	cout<<"是否有过卓越贡献："<<p->info.great<<endl;
+	cout<<"\n"<<endl;
 }
 bool login_confirm()
 {
@@ -66,7 +128,7 @@ bool Login()
 		cout<<"1.我是管理员"<<endl;
 		cout<<"2.我不是管理员\n"<<endl;
 		cout<<"输入你的选择："<<endl;
-		cin>>choice;
+		Detect(&choice);
 		switch(choice)
 		{
 		case 1:
@@ -99,6 +161,70 @@ bool Login()
 	}
 }
 
+void admin_menu()
+{
+	cout<<"**************家谱管理系统管理界面**************"<<endl;
+	cout<<"*		1.新建                         *"<<endl;
+	cout<<"*		2.删除                         *"<<endl;
+	cout<<"*		4.按名字搜索                   *"<<endl;
+	cout<<"*		5.显示族谱                     *"<<endl;
+	cout<<"*		6.更新数据                     *"<<endl;
+	cout<<"*		7.添加家族成员                 *"<<endl;
+	cout<<"*		8.统计数据                     *"<<endl;
+	cout<<"*		9.模糊查询                     *"<<endl;
+	cout<<"*		10.存档                     *"<<endl;
+	cout<<"*		1024.切换用户                  *"<<endl;
+	cout<<"*		0.退出                         *"<<endl;
+	cout<<"************************************************\n"<<endl;
+}
+
+
+
+bool Store(Person* p,ofstream& outfile)
+{
+	if(p)
+	{
+		outfile<<"普通节点："<<endl;
+		outfile<<p->info.name<<endl;
+		outfile<<p->info.gender<<endl;
+		outfile<<p->info.height<<endl;
+		outfile<<p->info.job<<endl;
+		outfile<<p->info.birthplace<<endl;
+		outfile<<p->info.birthday<<endl;
+		outfile<<p->info.live<<endl;
+		outfile<<p->info.deathday<<endl;
+		outfile<<p->info.age<<endl;
+		outfile<<p->info.education<<endl;
+		outfile<<p->info.great<<endl;
+		if(p->mate.name!="无")
+		{
+			outfile<<"配偶："<<endl;
+			outfile<<p->mate.name<<endl;
+			outfile<<p->mate.gender<<endl;
+			outfile<<p->mate.height<<endl;
+			outfile<<p->mate.job<<endl;
+			outfile<<p->mate.birthplace<<endl;
+			outfile<<p->mate.birthday<<endl;
+			outfile<<p->mate.live<<endl;
+			outfile<<p->mate.deathday<<endl;
+			outfile<<p->mate.age<<endl;
+			outfile<<p->mate.education<<endl;
+			outfile<<p->mate.great<<endl;
+		}
+		else
+		{
+			outfile<<"无配偶"<<endl;
+		}	
+		Store(p->firstchild,outfile);
+		Store(p->nexsilbing,outfile);
+		return true;
+	}
+	else
+	{
+		outfile<<"无节点"<<endl;
+		return true;
+	}
+}
 /*bool Loging()
 {
 	char a[10];
