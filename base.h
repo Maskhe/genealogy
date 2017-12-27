@@ -3,6 +3,11 @@
 #include <string>
 #include <fstream>
 #include <cstring>
+#include <iomanip>
+#include <regex>
+//#include <Windows.h>
+//#include <mysql.h>
+
 
 #define ERROR -1
 #define OK 1
